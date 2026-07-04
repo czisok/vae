@@ -1,12 +1,10 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 '''用Keras实现的VAE，CNN版本
    目前只保证支持Tensorflow后端
    改写自
    https://github.com/keras-team/keras/blob/master/examples/variational_autoencoder_deconv.py
 '''
-
-from __future__ import print_function
 
 import numpy as np
 import matplotlib.pyplot as plt

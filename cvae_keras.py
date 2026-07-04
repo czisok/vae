@@ -1,4 +1,4 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 
 '''用Keras实现的CVAE
@@ -7,8 +7,6 @@
  #来自
   https://github.com/keras-team/keras/blob/master/examples/variational_autoencoder.py
 '''
-
-from __future__ import print_function
 
 import numpy as np
 import matplotlib.pyplot as plt

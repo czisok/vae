@@ -1,4 +1,4 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 '''用Keras实现的VAE，CNN版本
    使用了离散隐变量，为此使用了Gumbel Softmax做重参数。
@@ -6,8 +6,6 @@
    改写自
    https://github.com/keras-team/keras/blob/master/examples/variational_autoencoder_deconv.py
 '''
-
-from __future__ import print_function
 
 import numpy as np
 import matplotlib.pyplot as plt

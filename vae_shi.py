@@ -1,28 +1,27 @@
-#! -*- coding:utf-8 -*-
+# -*- coding:utf-8 -*-
 # 一个简单的基于VAE和CNN的作诗机器人
 # 来自：https://kexue.fm/archives/5332
 
 import re
-import codecs
 import numpy as np
 from keras.layers import *
 from keras.models import Model
 from keras import backend as K
-from keras.engine.topology import Layer
+from keras.layers import Layer
 from keras.callbacks import Callback
 
 
-n = 5 # 只抽取五言诗
-latent_dim = 64 # 隐变量维度
-hidden_dim = 64 # 隐层节点数
+n = 5  # 只抽取五言诗
+latent_dim = 64  # 隐变量维度
+hidden_dim = 64  # 隐层节点数
 
-s = codecs.open('shi.txt', encoding='utf-8').read()
+s = open('shi.txt', encoding='utf-8').read()
 
 # 通过正则表达式找出所有的五言诗
-s = re.findall(u'　　(.{%s}，.{%s}。.*?)\r\n'%(n,n), s)
+s = re.findall(r'　　(.{%s}，.{%s}。.*?)\n' % (n, n), s)
 shi = []
 for i in s:
-    for j in i.split(u'。'): # 按句切分
+    for j in i.split('。'):  # 按句切分
         if j:
             shi.append(j)
 
@@ -113,8 +112,8 @@ generator = Model(decoder_input, _output)
 def gen():
     r = generator.predict(np.random.randn(1, latent_dim))[0]
     r = r.argmax(axis=1)
-    return ''.join([id2char[i] for i in r[:n]])\
-           + u'，'\
+    return ''.join([id2char[i] for i in r[:n]]) \
+           + '，' \
            + ''.join([id2char[i] for i in r[n:]])
 
 
@@ -124,7 +123,7 @@ class Evaluate(Callback):
         self.log = []
     def on_epoch_end(self, epoch, logs=None):
         self.log.append(gen())
-        print (u'          %s'%(self.log[-1])).encode('utf-8')
+        print('          %s' % (self.log[-1]))
 
 
 evaluator = Evaluate()
@@ -138,4 +137,4 @@ vae.fit(shi2id,
 vae.save_weights('shi.model')
 
 for i in range(20):
-    print gen()
+    print(gen())

@@ -1,4 +1,4 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # vMF-VAE简单实现参考
 
 import numpy as np

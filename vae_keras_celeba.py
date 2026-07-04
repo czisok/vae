@@ -1,9 +1,9 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import numpy as np
-from scipy import misc
 import glob
 import imageio
+from PIL import Image
 from keras.models import Model
 from keras.layers import *
 from keras import backend as K
@@ -14,16 +14,16 @@ from keras.callbacks import Callback
 imgs = glob.glob('img_align_celeba/*.jpg')
 np.random.shuffle(imgs)
 
-height,width = misc.imread(imgs[0]).shape[:2]
+height, width = np.array(Image.open(imgs[0])).shape[:2]
 center_height = int((height - width) / 2)
 img_dim = 64
 z_dim = 512
 
 
 def imread(f):
-    x = misc.imread(f)
+    x = np.array(Image.open(f))
     x = x[center_height:center_height+width, :]
-    x = misc.imresize(x, (img_dim, img_dim))
+    x = np.array(Image.fromarray(x).resize((img_dim, img_dim)))
     return x.astype(np.float32) / 255 * 2 - 1
 
 
@@ -41,16 +41,16 @@ def data_generator(batch_size=32):
 
 x_in = Input(shape=(img_dim, img_dim, 3))
 x = x_in
-x = Conv2D(z_dim/16, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
+x = Conv2D(z_dim//16, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
 x = BatchNormalization()(x)
 x = LeakyReLU(0.2)(x)
-x = Conv2D(z_dim/8, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
+x = Conv2D(z_dim//8, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
 x = BatchNormalization()(x)
 x = LeakyReLU(0.2)(x)
-x = Conv2D(z_dim/4, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
+x = Conv2D(z_dim//4, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
 x = BatchNormalization()(x)
 x = LeakyReLU(0.2)(x)
-x = Conv2D(z_dim/2, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
+x = Conv2D(z_dim//2, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
 x = BatchNormalization()(x)
 x = LeakyReLU(0.2)(x)
 x = Conv2D(z_dim, kernel_size=(5,5), strides=(2,2), padding='SAME')(x)
@@ -67,16 +67,16 @@ z_in = Input(shape=K.int_shape(x)[1:])
 z = z_in
 z = Dense(np.prod(map_size)*z_dim)(z)
 z = Reshape(map_size + (z_dim,))(z)
-z = Conv2DTranspose(z_dim/2, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
+z = Conv2DTranspose(z_dim//2, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
 z = BatchNormalization()(z)
 z = Activation('relu')(z)
-z = Conv2DTranspose(z_dim/4, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
+z = Conv2DTranspose(z_dim//4, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
 z = BatchNormalization()(z)
 z = Activation('relu')(z)
-z = Conv2DTranspose(z_dim/8, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
+z = Conv2DTranspose(z_dim//8, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
 z = BatchNormalization()(z)
 z = Activation('relu')(z)
-z = Conv2DTranspose(z_dim/16, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
+z = Conv2DTranspose(z_dim//16, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
 z = BatchNormalization()(z)
 z = Activation('relu')(z)
 z = Conv2DTranspose(3, kernel_size=(5,5), strides=(2,2), padding='SAME')(z)
@@ -143,7 +143,7 @@ class Evaluate(Callback):
 
 evaluator = Evaluate()
 
-vae.fit_generator(data_generator(),
-                  epochs=1000,
-                  steps_per_epoch=1000,
-                  callbacks=[evaluator])
+vae.fit(data_generator(),
+        epochs=1000,
+        steps_per_epoch=1000,
+        callbacks=[evaluator])

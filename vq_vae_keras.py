@@ -1,11 +1,10 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 # Keras简单实现VQ-VAE
 
 import numpy as np
-import scipy as sp
-from scipy import misc
 import glob
 import imageio
+from PIL import Image
 from keras.models import Model
 from keras.layers import *
 from keras import backend as K
@@ -28,8 +27,8 @@ num_layers = int(np.log2(img_dim) - 4)
 
 
 def imread(f):
-    x = misc.imread(f, mode='RGB')
-    x = misc.imresize(x, (img_dim, img_dim))
+    x = np.array(Image.open(f).convert('RGB'))
+    x = np.array(Image.fromarray(x).resize((img_dim, img_dim)))
     x = x.astype(np.float32)
     return x / 255 * 2 - 1
 
@@ -166,14 +165,11 @@ mse_z = K.mean((K.stop_gradient(e) - z)**2)
 loss = mse_x + mse_e + 0.25 * mse_z
 
 train_model.add_loss(loss)
+train_model.add_metric(mse_x, name='mse_x')
+train_model.add_metric(mse_e, name='mse_e')
+train_model.add_metric(mse_z, name='mse_z')
 train_model.compile(optimizer=Adam(1e-3))
 train_model.summary()
-train_model.metrics_names.append('mse_x')
-train_model.metrics_tensors.append(mse_x)
-train_model.metrics_names.append('mse_e')
-train_model.metrics_tensors.append(mse_e)
-train_model.metrics_names.append('mse_z')
-train_model.metrics_tensors.append(mse_z)
 
 
 # 重构采样函数
@@ -252,10 +248,10 @@ if __name__ == '__main__':
     trainer = Trainer()
     img_data = img_generator(imgs, batch_size)
 
-    train_model.fit_generator(img_data.__iter__(),
-                              steps_per_epoch=len(img_data),
-                              epochs=1000,
-                              callbacks=[trainer])
+    train_model.fit(img_data.__iter__(),
+                    steps_per_epoch=len(img_data),
+                    epochs=1000,
+                    callbacks=[trainer])
 
 
 """
@@ -272,7 +268,7 @@ train_D = img_generator(imgs)
 train__D = train_D.__iter__()
 train_codes = np.empty((0, e_model_total_size), dtype='int32')
 for _ in tqdm(iter(range(len(train_D)))):
-    d = train__D.next()[0]
+    d = next(train__D)[0]
     c = q_model.predict(e_model.predict(d))[0]
     c = c.reshape((c.shape[0], -1))
     train_codes = np.vstack([train_codes, c])
@@ -285,8 +281,7 @@ train_codes = np.hstack([
 
 
 class OurLayer(Layer):
-    """定义新的Layer，增加reuse方法，允许在定义Layer时调用现成的层
-    """
+    # 定义新的Layer，增加reuse方法，允许在定义Layer时调用现成的层
     def reuse(self, layer, *args, **kwargs):
         if not layer.built:
             if len(args) > 0:
@@ -299,8 +294,7 @@ class OurLayer(Layer):
 
 
 class Attention(OurLayer):
-    """多头注意力机制
-    """
+    # 多头注意力机制
     def __init__(self, heads, size_per_head, key_size=None,
                  mask_right=False, **kwargs):
         super(Attention, self).__init__(**kwargs)
@@ -350,7 +344,7 @@ class Attention(OurLayer):
         a = K.permute_dimensions(a, (0, 3, 2, 1))
         if self.mask_right:
             ones = K.ones_like(a[:1, :1])
-            mask = (ones - K.tf.matrix_band_part(ones, -1, 0)) * 1e10
+            mask = (ones - tf.linalg.band_part(ones, -1, 0)) * 1e10
             a = a - mask
         a = K.softmax(a)
         # 完成输出

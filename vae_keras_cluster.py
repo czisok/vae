@@ -1,10 +1,11 @@
-#! -*- coding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 import numpy as np
 from keras.layers import *
 from keras.models import Model
 from keras import backend as K
-import imageio,os
+import imageio
+import os
 from keras.datasets import mnist
 # from keras.datasets import fashion_mnist as mnist
 
@@ -192,8 +193,8 @@ if not os.path.exists('samples'):
     os.mkdir('samples')
 
 for i in range(10):
-    cluster_sample(u'samples/聚类类别_%s.png' % i, i)
-    random_sample(u'samples/类别采样_%s.png' % i, i)
+    cluster_sample('samples/聚类类别_%s.png' % i, i)
+    random_sample('samples/类别采样_%s.png' % i, i)
 
 
 right = 0.
@@ -201,7 +202,7 @@ for i in range(10):
     _ = np.bincount(y_train_[y_train_pred == i])
     right += _.max()
 
-print 'train acc: %s' % (right / len(y_train_))
+print('train acc: %s' % (right / len(y_train_)))
 
 
 right = 0.
@@ -209,4 +210,4 @@ for i in range(10):
     _ = np.bincount(y_test_[y_test_pred == i])
     right += _.max()
 
-print 'test acc: %s' % (right / len(y_test_))
+print('test acc: %s' % (right / len(y_test_)))
