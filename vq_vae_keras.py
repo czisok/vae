@@ -239,6 +239,8 @@ class Trainer(Callback):
             sample_ae_1('samples/test_ae_1_%s.png' % self.batch)
             sample_ae_2('samples/test_ae_2_%s.png' % self.batch)
             train_model.save_weights('./train_model.weights')
+            logs_str = ' - '.join(['%s: %.4f' % (k, v) for k, v in logs.items()])
+            print('\nbatch %d - %s' % (self.batch, logs_str))
         self.batch += 1
         batch = min(self.batch, 100000.)
 
@@ -251,7 +253,8 @@ if __name__ == '__main__':
     train_model.fit(img_data.__iter__(),
                     steps_per_epoch=len(img_data),
                     epochs=1000,
-                    callbacks=[trainer])
+                    callbacks=[trainer],
+                    verbose=0)
 
 
 """
